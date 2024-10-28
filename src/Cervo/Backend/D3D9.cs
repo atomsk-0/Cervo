@@ -1,6 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Drawing;
+using System.Numerics;
+using System.Runtime.InteropServices;
 using Cervo.Data;
 using Cervo.Type.Interface;
+using Cervo.Util;
 using Mochi.DearImGui;
 using Mochi.DearImGui.Backends.Direct3D9;
 using Mochi.DearImGui.Backends.Win32;
@@ -12,6 +15,8 @@ using IDirect3DDevice9 = TerraFX.Interop.DirectX.IDirect3DDevice9;
 #pragma warning disable CA1416 Disables warning -> "CA1416: Validate platform compatibility"
 
 namespace Cervo.Backend;
+
+//TODO move to D3D11
 
 public unsafe partial class D3D9 : IBackend
 {
@@ -30,6 +35,8 @@ public unsafe partial class D3D9 : IBackend
     private HWND windowHandle;
 
     private bool deviceLost;
+
+    private uint backendWidth, backendHeight;
 
     public bool Setup(IWindow window)
     {
@@ -55,9 +62,12 @@ public unsafe partial class D3D9 : IBackend
         device = lDevice;
         presentParameters = lPresentParameters;
 
-        ImGui.CreateContext();
+        ImUtils.SetupImGui();
         Win32ImBackend.Init(windowHandle);
         Direct3D9ImBackend.Init((Mochi.DearImGui.Backends.Direct3D9.IDirect3DDevice9*)device);
+
+        backendWidth = presentParameters.BackBufferWidth;
+        backendHeight = presentParameters.BackBufferHeight;
 
         return true;
     }
@@ -78,7 +88,12 @@ public unsafe partial class D3D9 : IBackend
 
     public void Render()
     {
-        if (deviceLost)
+        device->Clear(0, null, D3DCLEAR.D3DCLEAR_TARGET, 0, 1.0f, 0);
+        device->BeginScene();
+        device->EndScene();
+        device->Present(null, null, HWND.NULL, null);
+        // If device is lost, we need to check if it's ready to be reset
+        /*if (deviceLost)
         {
             HRESULT hr = device->TestCooperativeLevel();
             if (hr == D3DERR.D3DERR_DEVICELOST)
@@ -90,28 +105,40 @@ public unsafe partial class D3D9 : IBackend
             deviceLost = false;
         }
 
-        Direct3D9ImBackend.NewFrame();
+        if (backendWidth != presentParameters.BackBufferWidth || backendHeight != presentParameters.BackBufferHeight)
+        {
+            presentParameters.BackBufferWidth = backendWidth;
+            presentParameters.BackBufferHeight = backendHeight;
+            Reset();
+        }*/
+
+        /*Direct3D9ImBackend.NewFrame();
         Win32ImBackend.NewFrame();
         ImGui.NewFrame();
 
-        ImGui.ShowDemoWindow();
+        ImGui.SetNextWindowPos(Vector2.Zero, ImGuiCond.Once, Vector2.Zero);
+        ImGui.SetNextWindowSize(new Vector2(presentParameters.BackBufferWidth, presentParameters.BackBufferHeight), ImGuiCond.Always);
+        ImGui.Begin("cervo_window", null, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize);
+        OnRender();
+        Cervo.Render();
+        ImGui.End();
 
-        ImGui.EndFrame();
+        ImGui.EndFrame();*/
 
-        device->SetRenderState(D3DRENDERSTATETYPE.D3DRS_ZENABLE, 0);
+        /*device->SetRenderState(D3DRENDERSTATETYPE.D3DRS_ZENABLE, 0);
         device->SetRenderState(D3DRENDERSTATETYPE.D3DRS_ALPHABLENDENABLE, 0);
-        device->SetRenderState(D3DRENDERSTATETYPE.D3DRS_SCISSORTESTENABLE, 0);
-        device->Clear(0, null, D3DCLEAR.D3DCLEAR_TARGET | D3DCLEAR.D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+        device->SetRenderState(D3DRENDERSTATETYPE.D3DRS_SCISSORTESTENABLE, 0);*/
+        //device->Clear(0, null, D3DCLEAR.D3DCLEAR_TARGET | D3DCLEAR.D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
 
-        if (device->BeginScene() >= 0)
+        /*if (device->BeginScene() >= 0)
         {
-            ImGui.Render();
-            Direct3D9ImBackend.RenderDrawData(ImGui.GetDrawData());
+            //ImGui.Render();
+            //Direct3D9ImBackend.RenderDrawData(ImGui.GetDrawData());
             device->EndScene();
-        }
+        }*/
 
-        HRESULT result = device->Present(null, null, HWND.NULL, null);
-        if (result == D3DERR.D3DERR_DEVICELOST) deviceLost = true;
+        //HRESULT result = device->Present(null, null, HWND.NULL, null);
+        //deviceLost = result == D3DERR.D3DERR_DEVICELOST;
     }
 
 
@@ -130,6 +157,15 @@ public unsafe partial class D3D9 : IBackend
         }
     }
 
+    public void OnResize(int width, int height)
+    {
+        backendWidth = (uint)width;
+        backendHeight = (uint)height;
+    }
+
+
+    public Action OnRender { get; set; } = null!;
+
     public bool TryLoadTextureFromFile(string path, out Texture outTexture)
     {
         IDirect3DTexture9* texture;
@@ -145,5 +181,10 @@ public unsafe partial class D3D9 : IBackend
 
         outTexture = new Texture((nint)texture, desc.Width, desc.Height);
         return true;
+    }
+
+    public Size GetViewportSize()
+    {
+        return new Size((int)presentParameters.BackBufferWidth, (int)presentParameters.BackBufferHeight);
     }
 }
