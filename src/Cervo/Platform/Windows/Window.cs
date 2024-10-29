@@ -35,10 +35,12 @@ public unsafe partial class Window : IWindow
     private delegate LRESULT WndProcDelegate(HWND window, uint msg, WPARAM wParam, LPARAM lParam);
     private WndProcDelegate managedWndProc = null!;
 
+
     /// <summary>
     /// Initializes a new win32 window.
     /// </summary>
     /// <param name="aOptions">Window Options</param>
+    /// <param name="onRender">Render func</param>
     public void Create(in WindowOptions aOptions, Action onRender)
     {
         running = true;
@@ -46,10 +48,14 @@ public unsafe partial class Window : IWindow
 
         managedWndProc = wndProc;
 
+        // Set backend api to given option
         switch (options.BackendApi)
         {
             case BackendApi.DirectX9:
                 Backend = new D3D9();
+                break;
+            case BackendApi.DirectX11:
+                Backend = new D3D11();
                 break;
         }
 
@@ -94,9 +100,11 @@ public unsafe partial class Window : IWindow
 
         if (Backend.Setup(this) == false)
         {
+            Console.WriteLine("Failed to setup backend");
             //TODO: error handling
             return;
         }
+
         Backend.OnRender = onRender;
 
         ShowWindow(handle, SW.SW_SHOWDEFAULT);
@@ -104,7 +112,6 @@ public unsafe partial class Window : IWindow
 
         Cervo.CurrentWindow = this;
     }
-
 
     public void Render()
     {
@@ -125,7 +132,6 @@ public unsafe partial class Window : IWindow
         Destroy();
     }
 
-
     public void Destroy()
     {
         Backend.Destroy();
@@ -138,14 +144,12 @@ public unsafe partial class Window : IWindow
         return handle;
     }
 
-
     public Size GetSize()
     {
         RECT rect;
         GetClientRect(handle, &rect);
         return new Size(rect.right - rect.left, rect.bottom - rect.top);
     }
-
 
     private LRESULT wndProc(HWND window, uint msg, WPARAM wParam, LPARAM lParam)
     {

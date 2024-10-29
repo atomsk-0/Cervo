@@ -11,13 +11,17 @@ public static unsafe class ImUtils
     {
         ImGui.CreateContext();
 
-        ImGuiStyle* style = ImGui.GetStyle();
+        ImGuiIO* io = ImGui.GetIO();
+        io->IniFilename = null;
+        io->WantSaveIniSettings = false;
+
+        /*ImGuiStyle* style = ImGui.GetStyle();
         style->Colors[(int)ImGuiCol.WindowBg] = Color.FromArgb(0, 0, 0, 0).ToVector4();
         style->WindowRounding = 0;
         style->WindowBorderSize = 0;
         style->WindowPadding = new Vector2(0, 0);
         style->FramePadding = new Vector2(0, 0);
-        style->ItemSpacing = new Vector2(0, 0);
+        style->ItemSpacing = new Vector2(0, 0);*/
     }
 
     /* Public Stuff */
