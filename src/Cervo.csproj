@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\vendor\Mochi.DearImGui\Mochi.DearImGui\Mochi.DearImGui.csproj" />
+      <ProjectReference Include="..\vendor\Mochi.DearImGui\Mochi.DearImGui\Mochi.DearImGui.csproj" />
     </ItemGroup>
 
 </Project>
