@@ -16,7 +16,7 @@ using IDirect3DDevice9 = TerraFX.Interop.DirectX.IDirect3DDevice9;
 
 namespace Cervo.Backend;
 
-//TODO move to D3D11
+//TODO:
 
 public unsafe partial class D3D9 : IBackend
 {
@@ -25,8 +25,7 @@ public unsafe partial class D3D9 : IBackend
 
     // ReSharper disable once InconsistentNaming
     [LibraryImport(library)]
-    private static partial HRESULT D3DXCreateTextureFromFileA(IDirect3DDevice9* pDevice, [MarshalAs(UnmanagedType.LPStr)] string pSrcFile, IDirect3DTexture9** ppTexture);
-    // ^ I don't remember if d3dx9_43 had wchar version of this function, so we'll just use the ANSI version for now. Check this later.
+    private static partial HRESULT D3DXCreateTextureFromFileW(IDirect3DDevice9* pDevice, [MarshalAs(UnmanagedType.LPWStr)] string pSrcFile, IDirect3DTexture9** ppTexture);
     #endregion
 
     private IDirect3D9* d3d9;
@@ -93,7 +92,7 @@ public unsafe partial class D3D9 : IBackend
         device->EndScene();
         device->Present(null, null, HWND.NULL, null);
         // If device is lost, we need to check if it's ready to be reset
-        /*if (deviceLost)
+        if (deviceLost)
         {
             HRESULT hr = device->TestCooperativeLevel();
             if (hr == D3DERR.D3DERR_DEVICELOST)
@@ -110,35 +109,32 @@ public unsafe partial class D3D9 : IBackend
             presentParameters.BackBufferWidth = backendWidth;
             presentParameters.BackBufferHeight = backendHeight;
             Reset();
-        }*/
+        }
 
-        /*Direct3D9ImBackend.NewFrame();
+        Direct3D9ImBackend.NewFrame();
         Win32ImBackend.NewFrame();
         ImGui.NewFrame();
 
-        ImGui.SetNextWindowPos(Vector2.Zero, ImGuiCond.Once, Vector2.Zero);
-        ImGui.SetNextWindowSize(new Vector2(presentParameters.BackBufferWidth, presentParameters.BackBufferHeight), ImGuiCond.Always);
-        ImGui.Begin("cervo_window", null, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize);
-        OnRender();
-        Cervo.Render();
+        ImGui.ShowDemoWindow();
+
         ImGui.End();
 
-        ImGui.EndFrame();*/
+        ImGui.EndFrame();
 
-        /*device->SetRenderState(D3DRENDERSTATETYPE.D3DRS_ZENABLE, 0);
+        device->SetRenderState(D3DRENDERSTATETYPE.D3DRS_ZENABLE, 0);
         device->SetRenderState(D3DRENDERSTATETYPE.D3DRS_ALPHABLENDENABLE, 0);
-        device->SetRenderState(D3DRENDERSTATETYPE.D3DRS_SCISSORTESTENABLE, 0);*/
-        //device->Clear(0, null, D3DCLEAR.D3DCLEAR_TARGET | D3DCLEAR.D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+        device->SetRenderState(D3DRENDERSTATETYPE.D3DRS_SCISSORTESTENABLE, 0);
+        device->Clear(0, null, D3DCLEAR.D3DCLEAR_TARGET | D3DCLEAR.D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
 
-        /*if (device->BeginScene() >= 0)
+        if (device->BeginScene() >= 0)
         {
-            //ImGui.Render();
-            //Direct3D9ImBackend.RenderDrawData(ImGui.GetDrawData());
+            ImGui.Render();
+            Direct3D9ImBackend.RenderDrawData(ImGui.GetDrawData());
             device->EndScene();
-        }*/
+        }
 
-        //HRESULT result = device->Present(null, null, HWND.NULL, null);
-        //deviceLost = result == D3DERR.D3DERR_DEVICELOST;
+        HRESULT result = device->Present(null, null, HWND.NULL, null);
+        deviceLost = result == D3DERR.D3DERR_DEVICELOST;
     }
 
 
@@ -169,7 +165,7 @@ public unsafe partial class D3D9 : IBackend
     public bool TryLoadTextureFromFile(string path, out Texture outTexture)
     {
         IDirect3DTexture9* texture;
-        HRESULT hresult = D3DXCreateTextureFromFileA(device, path, &texture);
+        HRESULT hresult = D3DXCreateTextureFromFileW(device, path, &texture);
         if (hresult != S.S_OK)
         {
             outTexture = default;
