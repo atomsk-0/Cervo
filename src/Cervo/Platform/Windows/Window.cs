@@ -57,6 +57,9 @@ public unsafe partial class Window : IWindow
             case BackendApi.DirectX11:
                 Backend = new D3D11();
                 break;
+            case BackendApi.OpenGL:
+                Backend = new OpenGl();
+                break;
         }
 
         Manager.GetScreenSize(out int monitorViewWidth, out int monitorViewHeight);
@@ -126,6 +129,11 @@ public unsafe partial class Window : IWindow
             }
             else
             {
+                if (IsIconic(handle))
+                {
+                    Thread.Sleep(10);
+                    continue;
+                }
                 Backend.Render();
             }
         }
