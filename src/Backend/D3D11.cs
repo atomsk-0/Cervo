@@ -2,6 +2,7 @@
 using Cervo.Data;
 using Cervo.Type.Interface;
 using Cervo.Util;
+using Hexa.NET.DirectXTex;
 using Mochi.DearImGui;
 using Mochi.DearImGui.Backends.Direct3D11;
 using Mochi.DearImGui.Backends.Win32;
@@ -45,7 +46,20 @@ public unsafe class D3D11 : IBackend
         sd.Windowed = true;
         sd.SwapEffect = DXGI_SWAP_EFFECT.DXGI_SWAP_EFFECT_DISCARD;
 
-        // TODO: Clean this mess
+        if (createDeviceAndSwapChain(sd) == false) return false;
+
+        createRenderTarget();
+
+        ImUtils.SetupImGui();
+        Win32ImBackend.Init(windowHandle);
+        Direct3D11ImBackend.Init((Mochi.DearImGui.Backends.Direct3D11.ID3D11Device*)device, (Mochi.DearImGui.Backends.Direct3D11.ID3D11DeviceContext*)context);
+
+        return true;
+    }
+
+
+    private bool createDeviceAndSwapChain(DXGI_SWAP_CHAIN_DESC sd)
+    {
         const uint create_device_flags = 0;
         D3D_FEATURE_LEVEL[] featureLevelArray = [D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_10_0];
         fixed (D3D_FEATURE_LEVEL* pFeatureLevelArr = featureLevelArray)
@@ -88,14 +102,9 @@ public unsafe class D3D11 : IBackend
             swapChain = lSwapChain;
         }
 
-        createRenderTarget();
-
-        ImUtils.SetupImGui();
-        Win32ImBackend.Init(windowHandle);
-        Direct3D11ImBackend.Init((Mochi.DearImGui.Backends.Direct3D11.ID3D11Device*)device, (Mochi.DearImGui.Backends.Direct3D11.ID3D11DeviceContext*)context);
-
         return true;
     }
+
 
     private void createRenderTarget()
     {
@@ -168,7 +177,24 @@ public unsafe class D3D11 : IBackend
 
     public bool TryLoadTextureFromFile(string path, out Texture texture)
     {
-        throw new NotImplementedException();
+        ScratchImage image = DirectXTex.CreateScratchImage();
+        TexMetadata metadata = default;
+
+        FileInfo fileInfo = new FileInfo(path);
+        switch (fileInfo.Extension)
+        {
+            case "png":
+                DirectXTex.LoadFromPNGFile(path, &metadata, &image);
+                break;
+            case "jpeg" or "jpg":
+                DirectXTex.LoadFromJPEGFile(path, &metadata, &image);
+                break;
+            default:
+                texture = default;
+                return false;
+        }
+        texture = new Texture(image.Handle, (uint)metadata.Width, (uint)metadata.Height);
+        return true;
     }
 
     public Size GetViewportSize()
