@@ -112,8 +112,6 @@ public unsafe partial class Window : IWindow
 
         ShowWindow(handle, SW.SW_SHOWDEFAULT);
         UpdateWindow(handle);
-
-        Cervo.CurrentWindow = this;
     }
 
     public void Render()
