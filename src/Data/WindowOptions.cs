@@ -36,6 +36,11 @@ public struct WindowOptions
     public bool AllowResize { get; set; }
 
     /// <summary>
+    /// If set to true, the window has a native stroke borders
+    /// </summary>
+    public bool NativeBorders { get; set; }
+
+    /// <summary>
     /// Backend API to use
     /// </summary>
     public BackendApi BackendApi { get; set; }

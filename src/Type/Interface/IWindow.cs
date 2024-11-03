@@ -13,6 +13,26 @@ public interface IWindow
 
     public void Destroy();
 
+    public bool IsMinimized();
+
+    public bool IsMaximized();
+
+    public void Minimize();
+
+    public void Maximize();
+
+    public void Restore();
+
+    public void Show();
+
+    public void Hide();
+
+    public void Close();
+
+    public bool CanResize();
+
+    public void DragWindow();
+
     public IntPtr GetHandle();
 
     public Size GetSize();

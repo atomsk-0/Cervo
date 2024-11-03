@@ -20,9 +20,10 @@ internal static class Program
             Title = "CervoLAB",
             Size = new Size(800, 500),
             MinSize = new Size(400, 250),
-            BackendApi = BackendApi.OpenGL,
+            BackendApi = BackendApi.DirectX11,
             StartPosition = new Point(-1, -1),
-            AllowResize = true
+            AllowResize = true,
+            NativeBorders = true
         }, () => {});
         window.Render();
     }

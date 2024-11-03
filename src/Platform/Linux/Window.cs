@@ -87,6 +87,67 @@ public unsafe class Window : IWindow
         glfw.Terminate();
     }
 
+
+    public bool IsMinimized()
+    {
+        return glfw.GetWindowAttrib(windowHandle, WindowAttributeGetter.Iconified);
+    }
+
+
+    public bool IsMaximized()
+    {
+        return glfw.GetWindowAttrib(windowHandle, WindowAttributeGetter.Maximized);
+    }
+
+
+    public void Minimize()
+    {
+        glfw.IconifyWindow(windowHandle);
+    }
+
+
+    public void Maximize()
+    {
+        glfw.MaximizeWindow(windowHandle);
+    }
+
+
+    public void Restore()
+    {
+        glfw.RestoreWindow(windowHandle);
+    }
+
+
+    public void Show()
+    {
+        glfw.ShowWindow(windowHandle);
+    }
+
+
+    public void Hide()
+    {
+        glfw.HideWindow(windowHandle);
+    }
+
+
+    public void Close()
+    {
+        glfw.SetWindowShouldClose(windowHandle, true);
+    }
+
+
+    public bool CanResize()
+    {
+        return options.AllowResize;
+    }
+
+
+    public void DragWindow()
+    {
+        throw new NotImplementedException();
+    }
+
+
     public IntPtr GetHandle()
     {
         return (IntPtr)windowHandle;

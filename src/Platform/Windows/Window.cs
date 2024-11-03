@@ -109,6 +109,7 @@ public unsafe partial class Window : IWindow
         }
 
         Backend.OnRender = onRender;
+        Manager.SetWindowStyle(handle, options);
 
         ShowWindow(handle, SW.SW_SHOWDEFAULT);
         UpdateWindow(handle);
@@ -144,6 +145,68 @@ public unsafe partial class Window : IWindow
         DestroyWindow(handle);
         UnregisterClassW(wndClass.lpszClassName, wndClass.hInstance);
     }
+
+
+    public bool IsMinimized()
+    {
+        return IsIconic(handle);
+    }
+
+
+    public bool IsMaximized()
+    {
+        return IsZoomed(handle);
+    }
+
+
+    public void Minimize()
+    {
+        ShowWindowAsync(handle, SW.SW_MINIMIZE);
+    }
+
+
+    public void Maximize()
+    {
+        ShowWindowAsync(handle, SW.SW_MAXIMIZE);
+    }
+
+
+    public void Restore()
+    {
+        ShowWindowAsync(handle, SW.SW_RESTORE);
+    }
+
+
+    public void Show()
+    {
+        ShowWindowAsync(handle, SW.SW_SHOW);
+    }
+
+
+    public void Hide()
+    {
+        ShowWindowAsync(handle, SW.SW_HIDE);
+    }
+
+
+    public void Close()
+    {
+        PostMessageW(handle, WM.WM_CLOSE, 0, 0);
+    }
+
+
+    public bool CanResize()
+    {
+        return options.AllowResize;
+    }
+
+
+    public void DragWindow()
+    {
+        ReleaseCapture();
+        SendMessageW(handle, WM.WM_NCLBUTTONDOWN, HTCAPTION, 0);
+    }
+
 
     public IntPtr GetHandle()
     {
