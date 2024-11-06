@@ -40,7 +40,8 @@ public interface IBackend
     /// <param name="texture">Outputs texture struct</param>
     /// <returns>true if backend loaded texture successfully</returns>
     public bool TryLoadTextureFromFile(string path, out Texture texture);
-    // TODO: Add load texture from memory method
+    public bool TryLoadTextureFromMemory(in MemoryStream stream, uint width, uint height, out Texture texture);
+    public unsafe bool TryLoadTextureFromMemory(byte* data, uint width, uint height, nuint length, out Texture texture);
 
     internal Size GetViewportSize();
 }

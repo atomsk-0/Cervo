@@ -16,8 +16,6 @@ using IDirect3DDevice9 = TerraFX.Interop.DirectX.IDirect3DDevice9;
 
 namespace Cervo.Backend;
 
-//TODO:
-
 public unsafe partial class D3D9 : IBackend
 {
     #region Additional Imports
@@ -26,6 +24,10 @@ public unsafe partial class D3D9 : IBackend
     // ReSharper disable once InconsistentNaming
     [LibraryImport(library)]
     private static partial HRESULT D3DXCreateTextureFromFileW(IDirect3DDevice9* pDevice, [MarshalAs(UnmanagedType.LPWStr)] string pSrcFile, IDirect3DTexture9** ppTexture);
+
+    // ReSharper disable once InconsistentNaming
+    [LibraryImport(library)]
+    private static partial HRESULT D3DXCreateTextureFromFileInMemory(IDirect3DDevice9* pDevice, byte* pSrcData, uint srcDataSize, IDirect3DTexture9** ppTexture);
     #endregion
 
     private IDirect3D9* d3d9;
@@ -162,22 +164,48 @@ public unsafe partial class D3D9 : IBackend
 
     public Action OnRender { get; set; } = null!;
 
-    public bool TryLoadTextureFromFile(string path, out Texture outTexture)
+    public bool TryLoadTextureFromFile(string path, out Texture texture)
     {
-        IDirect3DTexture9* texture;
-        HRESULT hresult = D3DXCreateTextureFromFileW(device, path, &texture);
+        IDirect3DTexture9* d3dTexture;
+        HRESULT hresult = D3DXCreateTextureFromFileW(device, path, &d3dTexture);
         if (hresult != S.S_OK)
         {
-            outTexture = default;
+            texture = default;
             return false;
         }
 
         D3DSURFACE_DESC desc;
-        texture->GetLevelDesc(0, &desc);
+        d3dTexture->GetLevelDesc(0, &desc);
 
-        outTexture = new Texture((nint)texture, desc.Width, desc.Height);
+        texture = new Texture((nint)d3dTexture, desc.Width, desc.Height);
         return true;
     }
+
+    public bool TryLoadTextureFromMemory(in MemoryStream stream, uint width, uint height, out Texture texture)
+    {
+        fixed (byte* pData = stream.ToArray())
+        {
+            return TryLoadTextureFromMemory(pData, width, height, (uint)stream.Length, out texture);
+        }
+    }
+
+    public bool TryLoadTextureFromMemory(byte* data, uint width, uint height, UIntPtr length, out Texture texture)
+    {
+        IDirect3DTexture9* d3dTexture;
+        HRESULT hresult = D3DXCreateTextureFromFileInMemory(device, data, (uint)length, &d3dTexture);
+        if (hresult != S.S_OK)
+        {
+            texture = default;
+            return false;
+        }
+
+        D3DSURFACE_DESC desc;
+        d3dTexture->GetLevelDesc(0, &desc);
+
+        texture = new Texture((nint)d3dTexture, desc.Width, desc.Height);
+        return true;
+    }
+
 
     public Size GetViewportSize()
     {

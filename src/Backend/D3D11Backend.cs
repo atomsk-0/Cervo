@@ -10,13 +10,14 @@ using TerraFX.Interop.DirectX;
 using TerraFX.Interop.Windows;
 using ID3D11Device = TerraFX.Interop.DirectX.ID3D11Device;
 using ID3D11DeviceContext = TerraFX.Interop.DirectX.ID3D11DeviceContext;
+using ID3D11Resource = TerraFX.Interop.DirectX.ID3D11Resource;
 
 /* DirectX11 Backend Only for Windows platform */
 #pragma warning disable CA1416 Disables warning -> "CA1416: Validate platform compatibility"
 
 namespace Cervo.Backend;
 
-public unsafe class D3D11 : IBackend
+public unsafe class D3D11Backend : IBackend
 {
     private ID3D11Device* device;
     private ID3D11DeviceContext* context;
@@ -145,8 +146,6 @@ public unsafe class D3D11 : IBackend
         Win32ImBackend.NewFrame();
         ImGui.NewFrame();
 
-        ImGui.ShowDemoWindow();
-
         ImGui.Render();
         ID3D11RenderTargetView* lRenderTargetView = renderTargetView;
         context->OMSetRenderTargets(1, &lRenderTargetView, null);
@@ -177,22 +176,52 @@ public unsafe class D3D11 : IBackend
 
     public bool TryLoadTextureFromFile(string path, out Texture texture)
     {
+        texture = default;
         ScratchImage image = DirectXTex.CreateScratchImage();
         TexMetadata metadata = default;
 
         FileInfo fileInfo = new FileInfo(path);
+        if (fileInfo.Exists == false) return false;
         switch (fileInfo.Extension)
         {
-            case "png":
-                DirectXTex.LoadFromPNGFile(path, &metadata, &image);
+            case ".png":
+                if (DirectXTex.LoadFromPNGFile(path, &metadata, &image) != S.S_OK) return false;
                 break;
-            case "jpeg" or "jpg":
-                DirectXTex.LoadFromJPEGFile(path, &metadata, &image);
+            case ".jpeg" or ".jpg":
+                if (DirectXTex.LoadFromJPEGFile(path, &metadata, &image) != S.S_OK) return false;
                 break;
             default:
-                texture = default;
                 return false;
         }
+        texture = new Texture(image.Handle, (uint)metadata.Width, (uint)metadata.Height);
+        return true;
+    }
+
+    public bool TryLoadTextureFromMemory(in MemoryStream stream, uint width, uint height, out Texture texture)
+    {
+        fixed (byte* pData = stream.ToArray())
+        {
+            return TryLoadTextureFromMemory(pData, width, height, (uint)stream.Length, out texture);
+        }
+    }
+
+    /// <summary>
+    /// Load TGA texture from memory
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <param name="length"></param>
+    /// <param name="texture"></param>
+    /// <returns></returns>
+    public bool TryLoadTextureFromMemory(byte* data, uint width, uint height, nuint length, out Texture texture)
+    {
+        texture = default;
+        ScratchImage image = DirectXTex.CreateScratchImage();
+        TexMetadata metadata = default;
+
+        if (DirectXTex.LoadFromWICMemory(data, length, WICFlags.None, &metadata, &image, default) != S.S_OK) return false;
+
         texture = new Texture(image.Handle, (uint)metadata.Width, (uint)metadata.Height);
         return true;
     }

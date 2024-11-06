@@ -55,7 +55,7 @@ public unsafe partial class Window : IWindow
                 Backend = new D3D9();
                 break;
             case BackendApi.DirectX11:
-                Backend = new D3D11();
+                Backend = new D3D11Backend();
                 break;
             case BackendApi.OpenGL:
                 Backend = new OpenGl();

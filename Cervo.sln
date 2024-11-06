@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mochi.DearImGui.Native", "v
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mochi.DearImGui", "vendor\Mochi.DearImGui\Mochi.DearImGui\Mochi.DearImGui.csproj", "{9F9CBE5A-CEE6-4518-AE6B-6E80A282098C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cervo.Tests", "tests\Cervo.Tests\Cervo.Tests.csproj", "{1270F17D-BEAC-4C62-9CAE-694C9CF4DC3E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +26,7 @@ Global
 		{C33A69DB-9062-4434-A000-EC0E0C15377D} = {C81D00B3-AAB5-4DA2-BAE8-F39577102064}
 		{3DC5D5E3-60B3-4B8A-9949-41D6E83519BE} = {615226E1-D8CA-4367-9666-386C21928BE8}
 		{9F9CBE5A-CEE6-4518-AE6B-6E80A282098C} = {615226E1-D8CA-4367-9666-386C21928BE8}
+		{1270F17D-BEAC-4C62-9CAE-694C9CF4DC3E} = {C81D00B3-AAB5-4DA2-BAE8-F39577102064}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{A01C6E25-70CE-4C3F-B056-8FD4AB9C6D76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -42,5 +45,9 @@ Global
 		{9F9CBE5A-CEE6-4518-AE6B-6E80A282098C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F9CBE5A-CEE6-4518-AE6B-6E80A282098C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F9CBE5A-CEE6-4518-AE6B-6E80A282098C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1270F17D-BEAC-4C62-9CAE-694C9CF4DC3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1270F17D-BEAC-4C62-9CAE-694C9CF4DC3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1270F17D-BEAC-4C62-9CAE-694C9CF4DC3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1270F17D-BEAC-4C62-9CAE-694C9CF4DC3E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

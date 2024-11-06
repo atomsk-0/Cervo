@@ -8,13 +8,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Folder Include="Components\Internal\" />
       <Folder Include="Platform\Mac\" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Hexa.NET.DirectXTex" Version="2.0.1" />
+      <PackageReference Include="Hexa.NET.DirectXTex" Version="2.0.2" />
+      <PackageReference Include="Hexa.NET.StbImage" Version="1.0.0" />
       <PackageReference Include="Silk.NET.GLFW" Version="2.21.0" />
       <PackageReference Include="Silk.NET.OpenGL" Version="2.21.0" />
+      <PackageReference Include="Silk.NET.Vulkan" Version="2.21.0" />
       <PackageReference Include="TerraFX.Interop.Windows" Version="10.0.26100" />
     </ItemGroup>
 
