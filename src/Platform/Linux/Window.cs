@@ -153,6 +153,13 @@ public unsafe class Window : IWindow
         return (IntPtr)windowHandle;
     }
 
+
+    public WindowOptions GetOptions()
+    {
+        return options;
+    }
+
+
     public Size GetSize()
     {
         glfw.GetWindowSize(windowHandle, out int width, out int height);

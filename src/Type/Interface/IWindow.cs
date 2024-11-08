@@ -35,5 +35,7 @@ public interface IWindow
 
     public IntPtr GetHandle();
 
+    public WindowOptions GetOptions();
+
     public Size GetSize();
 }

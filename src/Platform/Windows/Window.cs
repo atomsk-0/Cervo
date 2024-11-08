@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Runtime.InteropServices;
 using Cervo.Backend;
+using Cervo.Components.Internal;
 using Cervo.Data;
 using Cervo.Type.Enum;
 using Cervo.Type.Interface;
@@ -134,6 +135,16 @@ public unsafe partial class Window : IWindow
                     continue;
                 }
                 Backend.Render();
+                if (Titlebar.IsDragging)
+                {
+                    DragWindow();
+                    /*
+                     * This is a workaround for the issue where the window keeps being dragged after
+                     * releasing the mouse button and pressing down again in the window even if the mouse is not in the titlebar
+                     */
+                    mouse_event(MOUSEEVENTF.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+                    mouse_event(MOUSEEVENTF.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+                }
             }
         }
         Destroy();
@@ -213,6 +224,13 @@ public unsafe partial class Window : IWindow
         return handle;
     }
 
+
+    public WindowOptions GetOptions()
+    {
+        return options;
+    }
+
+
     public Size GetSize()
     {
         RECT rect;
@@ -229,6 +247,7 @@ public unsafe partial class Window : IWindow
             {
                 if (wParam == SIZE_MINIMIZED) return 0;
                 Backend.OnResize(LOWORD(lParam), HIWORD(lParam));
+                Backend.Render();
                 return 0;
             }
             case WM.WM_GETMINMAXINFO:
@@ -264,7 +283,7 @@ public unsafe partial class Window : IWindow
                 }
                 return 0;
             }
-            case WM.WM_EXITSIZEMOVE | WM.WM_EXITMENULOOP:
+            case WM.WM_EXITMENULOOP:
             {
                 KillTimer(handle, loop_timer_id);
                 return 0;
@@ -274,6 +293,7 @@ public unsafe partial class Window : IWindow
                 if (wParam == loop_timer_id)
                 {
                     Backend.Render();
+
                     return 0;
                 }
                 return 0;

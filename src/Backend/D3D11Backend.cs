@@ -1,4 +1,6 @@
 ﻿using System.Drawing;
+using System.Numerics;
+using Cervo.Components.Internal;
 using Cervo.Data;
 using Cervo.Type.Interface;
 using Cervo.Util;
@@ -23,6 +25,7 @@ public unsafe class D3D11Backend : IBackend
     private ID3D11DeviceContext* context;
     private IDXGISwapChain* swapChain;
     private ID3D11RenderTargetView* renderTargetView;
+    private IWindow cervoWindow;
     private HWND windowHandle;
 
     private uint backendWidth, backendHeight;
@@ -30,7 +33,8 @@ public unsafe class D3D11Backend : IBackend
 
     public bool Setup(IWindow window)
     {
-        windowHandle = (HWND)window.GetHandle();
+        cervoWindow = window;
+        windowHandle = (HWND)cervoWindow.GetHandle();
 
         DXGI_SWAP_CHAIN_DESC sd = default;
         sd.BufferCount = 2;
@@ -75,7 +79,7 @@ public unsafe class D3D11Backend : IBackend
                 create_device_flags,
                 pFeatureLevelArr,
                 2,
-                TerraFX.Interop.DirectX.D3D11.D3D11_SDK_VERSION,
+                D3D11.D3D11_SDK_VERSION,
                 &sd,
                 &lSwapChain,
                 &lDevice,
@@ -89,7 +93,7 @@ public unsafe class D3D11Backend : IBackend
                     create_device_flags,
                     pFeatureLevelArr,
                     2,
-                    TerraFX.Interop.DirectX.D3D11.D3D11_SDK_VERSION,
+                    D3D11.D3D11_SDK_VERSION,
                     &sd,
                     &lSwapChain,
                     &lDevice,
@@ -145,6 +149,14 @@ public unsafe class D3D11Backend : IBackend
         Direct3D11ImBackend.NewFrame();
         Win32ImBackend.NewFrame();
         ImGui.NewFrame();
+
+        ImGui.SetNextWindowPos(Vector2.Zero, ImGuiCond.Always, Vector2.Zero);
+        ImGui.SetNextWindowSize(new Vector2(backendWidth, backendHeight), ImGuiCond.Always);
+        ImGui.Begin("im_window", null, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoTitleBar);
+        Titlebar.WindowsTitlebar();
+        ImGui.Text(DateTime.Now.ToString("HH:mm:ss"));
+        OnRender();
+        ImGui.End();
 
         ImGui.Render();
         ID3D11RenderTargetView* lRenderTargetView = renderTargetView;

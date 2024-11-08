@@ -26,7 +26,7 @@ public struct WindowOptions
     public Point StartPosition { get; set; }
 
     /// <summary>
-    /// If set to true, the window "background" will be transparent
+    /// If set to true, the window allows transparent background
     /// </summary>
     public bool Transparent { get; set; }
 

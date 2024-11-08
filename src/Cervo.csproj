@@ -8,7 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Components\Internal\" />
       <Folder Include="Platform\Mac\" />
     </ItemGroup>
 
