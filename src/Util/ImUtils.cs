@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Numerics;
+using Cervo.Managers;
 using Mochi.DearImGui;
 
 namespace Cervo.Util;
@@ -22,6 +23,13 @@ public static unsafe class ImUtils
         style->WindowPadding = new Vector2(0, 0);
         style->FramePadding = new Vector2(0, 0);
         style->ItemSpacing = new Vector2(0, 0);
+
+        if (OperatingSystem.IsWindows())
+        {
+            Platform.Windows.Manager.LoadSystemFont();
+        }
+
+        FontManager.LoadFonts();
     }
 
     /* Public Stuff */

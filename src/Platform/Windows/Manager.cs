@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using Cervo.Data;
+using Mochi.DearImGui;
 using TerraFX.Interop.Windows;
 using static TerraFX.Interop.Windows.Windows;
 
@@ -9,7 +10,17 @@ namespace Cervo.Platform.Windows;
 
 internal static unsafe class Manager
 {
+    internal const string MINIMIZE_ICON = "\uE921";
+    internal const string MAXIMIZE_ICON = "\uE922";
+    internal const string RESTORE_ICON = "\uE923";
+    internal const string CLOSE_ICON = "\uE8BB";
+
     private const ushort windows_11_min_build = 22000;
+    private const string segoe_icons_font = @"C:\Windows\Fonts\SegoeIcons.ttf";
+    private const string segmdl12_font = @"C:\Windows\Fonts\segmdl2.ttf";
+
+    internal static Font SystemFont { get; private set; } = null!;
+
 
     /// <summary>
     /// Get primary screen size
@@ -43,6 +54,32 @@ internal static unsafe class Manager
             // Remove window border
             uint val2 = 0xFFFFFFFE;
             DwmSetWindowAttribute(hWnd, (uint)DWMWINDOWATTRIBUTE.DWMWA_BORDER_COLOR, &val2, sizeof(uint));
+        }
+    }
+
+    internal static void LoadSystemFont()
+    {
+        ImGuiIO* io = ImGui.GetIO();
+        if (File.Exists(segoe_icons_font))
+        {
+            char[] range = ['\uE001', '\uF8CC', '\0'];
+            SystemFont = new Font(segoe_icons_font, 10, range);
+            fixed(char* pRange = range)
+                SystemFont.ImFont = io->Fonts->AddFontFromFileTTF(SystemFont.Path, SystemFont.Size, null, pRange);
+        }
+        else if (File.Exists(segmdl12_font))
+        {
+            char[] range = ['\uE001', '\uF8B3', '\0'];
+            SystemFont = new Font(segmdl12_font, 10, range);
+            fixed(char* pRange = range)
+                SystemFont.ImFont = io->Fonts->AddFontFromFileTTF(SystemFont.Path, SystemFont.Size, null, pRange);
+        }
+        else
+        {
+            SystemFont = new Font(string.Empty, 10)
+            {
+                ImFont = ImGui.GetFont()
+            };
         }
     }
 }

@@ -1,5 +1,7 @@
-﻿using System.Numerics;
+﻿using System.Drawing;
+using System.Numerics;
 using Cervo.Data.Style;
+using Cervo.Type.Interface;
 using Cervo.Util;
 using Mochi.DearImGui;
 using Mochi.DearImGui.Internal;
@@ -12,10 +14,10 @@ public static unsafe class Titlebar
 
     internal static bool IsDragging;
 
-    internal static void WindowsTitlebar()
+    internal static void WindowsTitlebar(IWindow context)
     {
         ImGuiWindow* window = ImGuiInternal.GetCurrentWindow();
-        //if (window->SkipItems) return;
+        if (window->SkipItems) return;
 
         ImRect titlebarRect = new ImRect(window->Pos, window->Pos + new Vector2(window->Size.X, style.Height));
         window->DrawList->AddRectFilled(titlebarRect.Min, titlebarRect.Max, style.BackgroundColor.ToUint32());
@@ -26,10 +28,32 @@ public static unsafe class Titlebar
             window->DrawList->AddLine(borderRect.Min, borderRect.Max, style.BorderColor.ToUint32(), style.BorderThickness);
         }
 
+
+        ImGui.SetCursorPosX(window->Size.X - titlebarRect.Max.Y);
+        if (windowsTitlebarButton("close_caption_btn", Platform.Windows.Manager.CLOSE_ICON, false, new Vector2(titlebarRect.Max.Y)))
+        {
+            context.Close();
+        }
+        ImGui.SameLine();
+        ImGui.SetCursorPosX(window->Size.X - titlebarRect.Max.Y * 2);
+        if (windowsTitlebarButton("toggle_state_caption_btn", context.IsMaximized() ? Platform.Windows.Manager.RESTORE_ICON : Platform.Windows.Manager.MAXIMIZE_ICON, false, new Vector2(titlebarRect.Max.Y)))
+        {
+            if (context.IsMaximized())
+                context.Restore();
+            else
+                context.Maximize();
+        }
+        ImGui.SameLine();
+        ImGui.SetCursorPosX(window->Size.X - titlebarRect.Max.Y * 3);
+        if (windowsTitlebarButton("minimize_caption_btn", Platform.Windows.Manager.MINIMIZE_ICON, false, new Vector2(titlebarRect.Max.Y)))
+        {
+            context.Minimize();
+        }
+
         uint titlebarId = ImGui.GetID("title_bar");
         ImGui.SetNextItemAllowOverlap();
         ImGuiInternal.ItemSize(titlebarRect, 0);
-        //if (ImGuiInternal.ItemAdd(titlebarRect, titlebarId) == false) return;
+        if (ImGuiInternal.ItemAdd(titlebarRect, titlebarId) == false) return;
 
         bool hovered, held;
         ImGuiInternal.ButtonBehavior(titlebarRect, titlebarId, &hovered, &held);
@@ -43,8 +67,63 @@ public static unsafe class Titlebar
         }
     }
 
+    internal static float GetHeight()
+    {
+        return style.Height + style.BorderThickness;
+    }
+
     public static void SetStyle(in TitlebarStyle newStyle)
     {
         style = newStyle;
+    }
+
+
+    private static bool windowsTitlebarButton(string id, string icon, bool disabled, Vector2 size)
+    {
+        ImGuiWindow* window = ImGuiInternal.GetCurrentWindow();
+        if (window->SkipItems) return false;
+
+        ImGuiContext* g = *ImGuiInternal.GImGui;
+        uint uId = window->GetID(id);
+        Vector2 position = window->DC.CursorPos;
+
+        ImGui.PushFont(Platform.Windows.Manager.SystemFont.GetImFont());
+        Vector2 labelSize = ImGui.CalcTextSize(icon);
+
+        Vector2 buttonSize = size;
+
+        if (size != default) buttonSize = size;
+        ImRect rect = new ImRect(position, position + buttonSize);
+
+        ImGuiInternal.ItemSize(size, 0);
+        if (ImGuiInternal.ItemAdd(rect, uId) == false)
+        {
+            ImGui.PopFont();
+            return false;
+        }
+
+        bool hovered, held;
+        bool pressed = ImGuiInternal.ButtonBehavior(rect, uId, &hovered, &held);
+
+        if (disabled)
+        {
+            hovered = hovered = pressed = false;
+        }
+
+        Color backgroundColor = Color.Transparent;
+        Color iconColor = Color.White;
+
+        if (hovered)
+        {
+            backgroundColor = icon == Platform.Windows.Manager.CLOSE_ICON ? Color.FromArgb(235, 64, 52) : Color.FromArgb(10, 255, 255, 255);
+        }
+
+        window->DrawList->AddRectFilled(rect.Min, rect.Max, backgroundColor.ToUint32(), 0f);
+        Vector2 centerIconPos = new Vector2(rect.Min.X + (rect.Max.X - rect.Min.X) / 2 - labelSize.X / 2, rect.Min.Y + (rect.Max.Y - rect.Min.Y) / 2 - labelSize.Y / 2);
+        window->DrawList->AddText(centerIconPos, iconColor.ToUint32(), icon);
+
+        ImGui.PopFont();
+
+        return pressed;
     }
 }

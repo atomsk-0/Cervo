@@ -25,7 +25,7 @@ public unsafe class D3D11Backend : IBackend
     private ID3D11DeviceContext* context;
     private IDXGISwapChain* swapChain;
     private ID3D11RenderTargetView* renderTargetView;
-    private IWindow cervoWindow;
+    private IWindow windowContext = null!;
     private HWND windowHandle;
 
     private uint backendWidth, backendHeight;
@@ -33,8 +33,8 @@ public unsafe class D3D11Backend : IBackend
 
     public bool Setup(IWindow window)
     {
-        cervoWindow = window;
-        windowHandle = (HWND)cervoWindow.GetHandle();
+        windowContext = window;
+        windowHandle = (HWND)windowContext.GetHandle();
 
         DXGI_SWAP_CHAIN_DESC sd = default;
         sd.BufferCount = 2;
@@ -153,9 +153,13 @@ public unsafe class D3D11Backend : IBackend
         ImGui.SetNextWindowPos(Vector2.Zero, ImGuiCond.Always, Vector2.Zero);
         ImGui.SetNextWindowSize(new Vector2(backendWidth, backendHeight), ImGuiCond.Always);
         ImGui.Begin("im_window", null, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoTitleBar);
-        Titlebar.WindowsTitlebar();
-        ImGui.Text(DateTime.Now.ToString("HH:mm:ss"));
+        Titlebar.WindowsTitlebar(windowContext);
+        ImGui.SetCursorPosY(Titlebar.GetHeight());
+        ImGui.PushStyleColor(ImGuiCol.ChildBg, Color.Transparent.ToVector4());
+        ImGui.BeginChild("content_child", new Vector2(backendWidth, backendHeight - Titlebar.GetHeight()));
+        ImGui.PopStyleColor();
         OnRender();
+        ImGui.EndChild();
         ImGui.End();
 
         ImGui.Render();

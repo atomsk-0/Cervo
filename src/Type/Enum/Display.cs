@@ -3,6 +3,7 @@
 public enum Display
 {
     Block,
+    Fill,
     Flex,
     Hidden,
 }

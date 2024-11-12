@@ -1,11 +1,13 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Drawing;
+using System.Numerics;
 using Cervo;
 using Cervo.Components;
 using Cervo.Components.Internal;
 using Cervo.Data;
 using Cervo.Data.Style;
+using Cervo.Managers;
 using Cervo.Platform.Windows;
 using Cervo.Type.Enum;
 using Mochi.DearImGui;
@@ -14,10 +16,12 @@ namespace CervoLAB;
 
 internal static unsafe class Program
 {
+    private static readonly Font font = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Inter-Regular.ttf"), 16);
+
     private static NormalButtonStyle buttonStyle = new NormalButtonStyle
     {
         Padding = new Padding(10),
-        Font = ImGui.GetFont(),
+        Font = font,
         TextAlign = TextAlign.Center,
         Display = Display.Flex,
 
@@ -42,9 +46,20 @@ internal static unsafe class Program
         BorderDisabledColor = Color.FromArgb(50, 50, 50)
     };
 
+    private static readonly NormalPanelStyle main_panel = new()
+    {
+        BackgroundColor = Color.FromArgb(32, 32, 32),
+        BorderThickness = 0,
+        Display = Display.Fill,
+        Padding = new Vector2(4, 8),
+        Radius = 0
+    };
+
     // ReSharper disable once InconsistentNaming
     private static void Main()
     {
+        FontManager.AddFont(font);
+
         Titlebar.SetStyle(new TitlebarStyle
         {
             Height = 40,
@@ -62,10 +77,20 @@ internal static unsafe class Program
             StartPosition = new Point(-1, -1),
             AllowResize = true,
             NativeBorders = true
-        }, () =>
-        {
-            Button.Normal("test", "Test Button", buttonStyle);
-        });
+        }, OnRender);
         window.Render();
+    }
+
+
+    private static void OnRender()
+    {
+        Panel.BeginNormal("main_child", main_panel);
+        {
+            if (Button.Normal("test_button_0", "Hello World", buttonStyle))
+            {
+                Console.WriteLine("Button Pressed!");
+            }
+        }
+        Panel.End();
     }
 }
