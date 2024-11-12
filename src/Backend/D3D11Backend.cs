@@ -152,11 +152,14 @@ public unsafe class D3D11Backend : IBackend
 
         ImGui.SetNextWindowPos(Vector2.Zero, ImGuiCond.Always, Vector2.Zero);
         ImGui.SetNextWindowSize(new Vector2(backendWidth, backendHeight), ImGuiCond.Always);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, windowContext.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING : Vector2.Zero);
         ImGui.Begin("im_window", null, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoTitleBar);
+        ImGui.PopStyleVar();
         Titlebar.WindowsTitlebar(windowContext);
-        ImGui.SetCursorPosY(Titlebar.GetHeight());
+        ImGui.SetCursorPosY(Titlebar.GetHeight(windowContext));
         ImGui.PushStyleColor(ImGuiCol.ChildBg, Color.Transparent.ToVector4());
-        ImGui.BeginChild("content_child", new Vector2(backendWidth, backendHeight - Titlebar.GetHeight()));
+        ImGui.SetCursorPosX(OperatingSystem.IsWindows() && windowContext.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING.X : 0);
+        ImGui.BeginChild("content_child", new Vector2(backendWidth - (OperatingSystem.IsWindows() && windowContext.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING.X * 2 : 0), backendHeight - Titlebar.GetHeight(windowContext) - (OperatingSystem.IsWindows() && windowContext.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING.Y : 0)), ImGuiChildFlags.AlwaysUseWindowPadding);
         ImGui.PopStyleColor();
         OnRender();
         ImGui.EndChild();

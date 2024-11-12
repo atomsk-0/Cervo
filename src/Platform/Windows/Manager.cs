@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Numerics;
 using Cervo.Data;
 using Mochi.DearImGui;
 using TerraFX.Interop.Windows;
@@ -14,6 +15,7 @@ internal static unsafe class Manager
     internal const string MAXIMIZE_ICON = "\uE922";
     internal const string RESTORE_ICON = "\uE923";
     internal const string CLOSE_ICON = "\uE8BB";
+    internal static readonly Vector2 MAXIMIZED_PADDING = new(8, 8);
 
     private const ushort windows_11_min_build = 22000;
     private const string segoe_icons_font = @"C:\Windows\Fonts\SegoeIcons.ttf";

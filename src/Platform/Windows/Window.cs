@@ -230,7 +230,6 @@ public unsafe partial class Window : IWindow
         return options;
     }
 
-
     public Size GetSize()
     {
         RECT rect;

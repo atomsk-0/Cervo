@@ -19,7 +19,11 @@ public static unsafe class Titlebar
         ImGuiWindow* window = ImGuiInternal.GetCurrentWindow();
         if (window->SkipItems) return;
 
-        ImRect titlebarRect = new ImRect(window->Pos, window->Pos + new Vector2(window->Size.X, style.Height));
+        float yPoint = OperatingSystem.IsWindows() && context.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING.Y : 0;
+
+        Vector2 pos = new Vector2(0, yPoint);
+
+        ImRect titlebarRect = new ImRect(pos, pos + new Vector2(window->Size.X, style.Height));
         window->DrawList->AddRectFilled(titlebarRect.Min, titlebarRect.Max, style.BackgroundColor.ToUint32());
 
         if (style.BorderThickness > 0)
@@ -28,15 +32,14 @@ public static unsafe class Titlebar
             window->DrawList->AddLine(borderRect.Min, borderRect.Max, style.BorderColor.ToUint32(), style.BorderThickness);
         }
 
-
         ImGui.SetCursorPosX(window->Size.X - titlebarRect.Max.Y);
-        if (windowsTitlebarButton("close_caption_btn", Platform.Windows.Manager.CLOSE_ICON, false, new Vector2(titlebarRect.Max.Y)))
+        if (windowsTitlebarButton("close_caption_btn", Platform.Windows.Manager.CLOSE_ICON, false, new Vector2(style.Height)))
         {
             context.Close();
         }
         ImGui.SameLine();
         ImGui.SetCursorPosX(window->Size.X - titlebarRect.Max.Y * 2);
-        if (windowsTitlebarButton("toggle_state_caption_btn", context.IsMaximized() ? Platform.Windows.Manager.RESTORE_ICON : Platform.Windows.Manager.MAXIMIZE_ICON, false, new Vector2(titlebarRect.Max.Y)))
+        if (windowsTitlebarButton("toggle_state_caption_btn", context.IsMaximized() ? Platform.Windows.Manager.RESTORE_ICON : Platform.Windows.Manager.MAXIMIZE_ICON, false, new Vector2(style.Height)))
         {
             if (context.IsMaximized())
                 context.Restore();
@@ -45,7 +48,7 @@ public static unsafe class Titlebar
         }
         ImGui.SameLine();
         ImGui.SetCursorPosX(window->Size.X - titlebarRect.Max.Y * 3);
-        if (windowsTitlebarButton("minimize_caption_btn", Platform.Windows.Manager.MINIMIZE_ICON, false, new Vector2(titlebarRect.Max.Y)))
+        if (windowsTitlebarButton("minimize_caption_btn", Platform.Windows.Manager.MINIMIZE_ICON, false, new Vector2(style.Height)))
         {
             context.Minimize();
         }
@@ -67,9 +70,14 @@ public static unsafe class Titlebar
         }
     }
 
-    internal static float GetHeight()
+    internal static float GetHeight(IWindow context)
     {
-        return style.Height + style.BorderThickness;
+        float height = style.Height + style.BorderThickness;
+        if (OperatingSystem.IsWindows() && context.IsMaximized())
+        {
+            height += Platform.Windows.Manager.MAXIMIZED_PADDING.Y;
+        }
+        return height;
     }
 
     public static void SetStyle(in TitlebarStyle newStyle)
