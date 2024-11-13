@@ -59,9 +59,12 @@ internal static unsafe class Manager
         }
     }
 
+    // Load's the system font for the application
+    // TODO: only 3 icons from the fonts are really used so we could just embed them in the application instead what would also save memory usage.
     internal static void LoadSystemFont()
     {
         ImGuiIO* io = ImGui.GetIO();
+        // If "Windows11" System font is available use it, otherwise use the Windows 10 font
         if (File.Exists(segoe_icons_font))
         {
             char[] range = ['\uE001', '\uF8CC', '\0'];
@@ -78,6 +81,7 @@ internal static unsafe class Manager
         }
         else
         {
+            // for now, we just "fallback" to the default font if both fonts are not available
             SystemFont = new Font(string.Empty, 10)
             {
                 ImFont = ImGui.GetFont()

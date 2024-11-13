@@ -16,6 +16,8 @@ using IDirect3DDevice9 = TerraFX.Interop.DirectX.IDirect3DDevice9;
 
 namespace Cervo.Backend;
 
+// Currently outdated implementation compared to D3D11Backend TODO: Update this
+
 public unsafe partial class D3D9 : IBackend
 {
     #region Additional Imports

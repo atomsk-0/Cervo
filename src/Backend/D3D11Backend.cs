@@ -62,7 +62,11 @@ public unsafe class D3D11Backend : IBackend
         return true;
     }
 
-
+    /// <summary>
+    /// Create device and swap chain for D3D11
+    /// </summary>
+    /// <param name="sd">swap chain desc</param>
+    /// <returns>true if success</returns>
     private bool createDeviceAndSwapChain(DXGI_SWAP_CHAIN_DESC sd)
     {
         const uint create_device_flags = 0;
@@ -85,6 +89,7 @@ public unsafe class D3D11Backend : IBackend
                 &lDevice,
                 &featureLevel,
                 &lContext);
+            // Fallback to WARP if hardware not supported
             if (res == DXGI.DXGI_ERROR_UNSUPPORTED)
             {
                 res = DirectX.D3D11CreateDeviceAndSwapChain(null,
@@ -131,6 +136,7 @@ public unsafe class D3D11Backend : IBackend
 
     public void Render()
     {
+        // Check if swap chain is occluded and sleep thread to reduce CPU usage
         if (swapChainOccluded && swapChain->Present(0, DXGI.DXGI_PRESENT_TEST) == DXGI.DXGI_STATUS_OCCLUDED)
         {
             Thread.Sleep(10);
@@ -138,6 +144,7 @@ public unsafe class D3D11Backend : IBackend
         }
         swapChainOccluded = false;
 
+        // Resize buffers if doesn't match
         var viewPortSize = GetViewportSize();
         if (backendWidth != viewPortSize.Width || backendHeight != viewPortSize.Height)
         {
@@ -146,26 +153,36 @@ public unsafe class D3D11Backend : IBackend
             createRenderTarget();
         }
 
+        /* ImGui */
+
         Direct3D11ImBackend.NewFrame();
         Win32ImBackend.NewFrame();
         ImGui.NewFrame();
-
-        ImGui.SetNextWindowPos(Vector2.Zero, ImGuiCond.Always, Vector2.Zero);
-        ImGui.SetNextWindowSize(new Vector2(backendWidth, backendHeight), ImGuiCond.Always);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, windowContext.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING : Vector2.Zero);
-        ImGui.Begin("im_window", null, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoTitleBar);
-        ImGui.PopStyleVar();
-        Titlebar.WindowsTitlebar(windowContext);
-        ImGui.SetCursorPosY(Titlebar.GetHeight(windowContext));
-        ImGui.PushStyleColor(ImGuiCol.ChildBg, Color.Transparent.ToVector4());
-        ImGui.SetCursorPosX(OperatingSystem.IsWindows() && windowContext.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING.X : 0);
-        ImGui.BeginChild("content_child", new Vector2(backendWidth - (OperatingSystem.IsWindows() && windowContext.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING.X * 2 : 0), backendHeight - Titlebar.GetHeight(windowContext) - (OperatingSystem.IsWindows() && windowContext.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING.Y : 0)), ImGuiChildFlags.AlwaysUseWindowPadding);
-        ImGui.PopStyleColor();
-        OnRender();
-        ImGui.EndChild();
-        ImGui.End();
+        {
+            ImGui.SetNextWindowPos(Vector2.Zero, ImGuiCond.Always, Vector2.Zero);
+            ImGui.SetNextWindowSize(new Vector2(backendWidth, backendHeight), ImGuiCond.Always);
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, windowContext.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING : Vector2.Zero);
+            ImGui.Begin("im_window", null, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoTitleBar);
+            {
+                ImGui.PopStyleVar();
+                Titlebar.WindowsTitlebar(windowContext);
+                ImGui.SetCursorPosY(Titlebar.GetHeight(windowContext));
+                ImGui.PushStyleColor(ImGuiCol.ChildBg, Color.Transparent.ToVector4());
+                // Currently messy workaround for Windows maximized padding, TODO make this cleaner (also in Titlebar.cs and any other places)
+                ImGui.SetCursorPosX(OperatingSystem.IsWindows() && windowContext.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING.X : 0);
+                ImGui.BeginChild("content_child", new Vector2(backendWidth - (OperatingSystem.IsWindows() && windowContext.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING.X * 2 : 0), backendHeight - Titlebar.GetHeight(windowContext) - (OperatingSystem.IsWindows() && windowContext.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING.Y : 0)), ImGuiChildFlags.AlwaysUseWindowPadding);
+                {
+                    ImGui.PopStyleColor();
+                    OnRender();
+                }
+                ImGui.EndChild();
+            }
+            ImGui.End();
+        }
+        ImGui.EndFrame();
 
         ImGui.Render();
+
         ID3D11RenderTargetView* lRenderTargetView = renderTargetView;
         context->OMSetRenderTargets(1, &lRenderTargetView, null);
         renderTargetView = lRenderTargetView;
@@ -224,15 +241,6 @@ public unsafe class D3D11Backend : IBackend
         }
     }
 
-    /// <summary>
-    /// Load TGA texture from memory
-    /// </summary>
-    /// <param name="data"></param>
-    /// <param name="width"></param>
-    /// <param name="height"></param>
-    /// <param name="length"></param>
-    /// <param name="texture"></param>
-    /// <returns></returns>
     public bool TryLoadTextureFromMemory(byte* data, uint width, uint height, nuint length, out Texture texture)
     {
         texture = default;

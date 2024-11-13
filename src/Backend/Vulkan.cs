@@ -4,6 +4,8 @@ using Cervo.Type.Interface;
 
 namespace Cervo.Backend;
 
+// Not sure if this will stay/be done, but if it does probably will replace OpenGL
+
 public class Vulkan : IBackend
 {
     public bool Setup(IWindow window)

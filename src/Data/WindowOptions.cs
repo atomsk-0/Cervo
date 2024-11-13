@@ -28,7 +28,7 @@ public struct WindowOptions
     /// <summary>
     /// If set to true, the window allows transparent background
     /// </summary>
-    public bool Transparent { get; set; }
+    public bool Transparent { get; set; } //TODO: Implement
 
     /// <summary>
     /// If set to true, the window will be resizable
@@ -39,6 +39,16 @@ public struct WindowOptions
     /// If set to true, the window has a native stroke borders
     /// </summary>
     public bool NativeBorders { get; set; }
+
+    /// <summary>
+    /// If set to true, the window will have no titlebar
+    /// </summary>
+    public bool NoTitlebar { get; set; } //TODO: Implement
+
+    /// <summary>
+    /// If set to true, the window will use the native titlebar (not recommended to be true) unless need because of legacy reasons
+    /// </summary>
+    public bool NativeTitlebar { get; set; } //TODO: Implement
 
     /// <summary>
     /// Backend API to use

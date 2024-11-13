@@ -16,6 +16,8 @@ using Texture = Cervo.Data.Texture;
 
 namespace Cervo.Backend;
 
+// Currently outdated implementation compared to D3D11Backend TODO: Update this
+
 public unsafe class OpenGl : IBackend
 {
     private GL gl = null!;
