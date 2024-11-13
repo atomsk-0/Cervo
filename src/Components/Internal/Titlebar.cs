@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Cervo.Data.Style;
 using Cervo.Type.Interface;
 using Cervo.Util;
@@ -38,7 +39,7 @@ public static unsafe class Titlebar
             context.Close();
         }
         ImGui.SameLine();
-        ImGui.SetCursorPosX(window->Size.X - titlebarRect.Max.Y * 2);
+        ImGui.SetCursorPosX(window->Size.X - titlebarRect.Max.Y * 2 + (OperatingSystem.IsWindows() && context.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING.X : 0));
         if (windowsTitlebarButton("toggle_state_caption_btn", context.IsMaximized() ? Platform.Windows.Manager.RESTORE_ICON : Platform.Windows.Manager.MAXIMIZE_ICON, false, new Vector2(style.Height)))
         {
             if (context.IsMaximized())
@@ -47,7 +48,7 @@ public static unsafe class Titlebar
                 context.Maximize();
         }
         ImGui.SameLine();
-        ImGui.SetCursorPosX(window->Size.X - titlebarRect.Max.Y * 3);
+        ImGui.SetCursorPosX(window->Size.X - titlebarRect.Max.Y * 3 + (OperatingSystem.IsWindows() && context.IsMaximized() ? Platform.Windows.Manager.MAXIMIZED_PADDING.X : 0));
         if (windowsTitlebarButton("minimize_caption_btn", Platform.Windows.Manager.MINIMIZE_ICON, false, new Vector2(style.Height)))
         {
             context.Minimize();
