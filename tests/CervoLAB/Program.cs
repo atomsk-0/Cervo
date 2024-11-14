@@ -55,6 +55,16 @@ internal static unsafe class Program
         Radius = 0
     };
 
+    private static readonly TooltipStyle tooltip_style = new()
+    {
+        Font = font,
+        BackgroundColor = Color.FromArgb(32, 32, 32),
+        BorderColor = Color.FromArgb(50, 50, 50),
+        BorderThickness = 1,
+        Padding = new Vector2(4, 4),
+        Radius = 3
+    };
+
     // ReSharper disable once InconsistentNaming
     private static void Main()
     {
@@ -90,6 +100,7 @@ internal static unsafe class Program
             {
                 Console.WriteLine("Button Pressed!");
             }
+            Tooltip.Normal("test", tooltip_style);
         }
         Panel.End();
     }
